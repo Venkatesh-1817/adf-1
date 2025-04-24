@@ -1,0 +1,14 @@
+{
+	"name": "adf-venkatesh",
+	"properties": {
+		"globalConfigurations": {
+			"PipelineBillingEnabled": "false"
+		}
+	},
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "0b730808-e196-4ffd-96bf-9db80b9fcbde",
+		"tenantId": "18c3b4f7-e526-4f98-939a-19118361cac0"
+	}
+}

@@ -1,0 +1,51 @@
+{
+	"name": "AzureSqlTable1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "OrderID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "OrderDate",
+				"type": "date"
+			},
+			{
+				"name": "CustomerID",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Region",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ProductID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "Quantity",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "UnitPrice",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 2
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "StagingOrders"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

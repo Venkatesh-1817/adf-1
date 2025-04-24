@@ -1,0 +1,180 @@
+{
+	"name": "dataflow1",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "AzureSqlTable1",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "NorthTable",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				},
+				{
+					"dataset": {
+						"referenceName": "EastTable",
+						"type": "DatasetReference"
+					},
+					"name": "sink2"
+				},
+				{
+					"dataset": {
+						"referenceName": "WestTable",
+						"type": "DatasetReference"
+					},
+					"name": "sink3"
+				},
+				{
+					"dataset": {
+						"referenceName": "SouthTable",
+						"type": "DatasetReference"
+					},
+					"name": "sink4"
+				}
+			],
+			"transformations": [
+				{
+					"name": "split1"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "PartitionByRegion"
+				},
+				{
+					"name": "alterRow1"
+				},
+				{
+					"name": "alterRow2"
+				},
+				{
+					"name": "alterRow3"
+				},
+				{
+					"name": "alterRow4"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          OrderID as integer,",
+				"          OrderDate as date,",
+				"          CustomerID as string,",
+				"          Region as string,",
+				"          ProductID as integer,",
+				"          Quantity as integer,",
+				"          UnitPrice as decimal(10,2)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> source1",
+				"source1 split(isNull(Quantity) || isNull(UnitPrice) || toDecimal(Quantity) <= 0 || UnitPrice <= 0,",
+				"     disjoint: false) ~> split1@(BadData, GoodData)",
+				"split1@GoodData derive(TotalSales = Quantity*UnitPrice) ~> derivedColumn1",
+				"derivedColumn1 split(Region == 'North',",
+				"     Region == 'East',",
+				"     Region == 'West',",
+				"     disjoint: false) ~> PartitionByRegion@(North, East, West, South)",
+				"PartitionByRegion@North alterRow(upsertIf(true())) ~> alterRow1",
+				"PartitionByRegion@East alterRow(upsertIf(true())) ~> alterRow2",
+				"PartitionByRegion@West alterRow(upsertIf(true())) ~> alterRow3",
+				"PartitionByRegion@South alterRow(upsertIf(true())) ~> alterRow4",
+				"alterRow1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          OrderID as integer,",
+				"          OrderDate as date,",
+				"          CustomerID as integer,",
+				"          Region as string,",
+				"          ProductID as integer,",
+				"          Quantity as decimal(10,2),",
+				"          UnitPrice as decimal(10,2),",
+				"          TotalSales as decimal(18,2)",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:false,",
+				"     updateable:false,",
+				"     upsertable:true,",
+				"     keys:['OrderID'],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1",
+				"alterRow2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          OrderID as integer,",
+				"          OrderDate as date,",
+				"          CustomerID as integer,",
+				"          Region as string,",
+				"          ProductID as integer,",
+				"          Quantity as decimal(10,2),",
+				"          UnitPrice as decimal(10,2),",
+				"          TotalSales as decimal(18,2)",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:false,",
+				"     updateable:false,",
+				"     upsertable:true,",
+				"     keys:['OrderID'],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink2",
+				"alterRow3 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          OrderID as integer,",
+				"          OrderDate as date,",
+				"          CustomerID as integer,",
+				"          Region as string,",
+				"          ProductID as integer,",
+				"          Quantity as decimal(10,2),",
+				"          UnitPrice as decimal(10,2),",
+				"          TotalSales as decimal(18,2)",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:false,",
+				"     updateable:false,",
+				"     upsertable:true,",
+				"     keys:['OrderID'],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink3",
+				"alterRow4 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          OrderID as integer,",
+				"          OrderDate as date,",
+				"          CustomerID as integer,",
+				"          Region as string,",
+				"          ProductID as integer,",
+				"          Quantity as decimal(10,2),",
+				"          UnitPrice as decimal(10,2),",
+				"          TotalSales as decimal(18,2)",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:false,",
+				"     updateable:false,",
+				"     upsertable:true,",
+				"     keys:['OrderID'],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink4"
+			]
+		}
+	}
+}

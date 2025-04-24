@@ -1,0 +1,108 @@
+{
+	"name": "dataflow2",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Json4",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "AzureSqlTable2",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "split1"
+				},
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "DeletingCountColumn"
+				},
+				{
+					"name": "window1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          CustomerID as short,",
+				"          Email as string,",
+				"          FirstName as string,",
+				"          LastName as string,",
+				"          Phone as string,",
+				"          Region as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     documentForm: 'documentPerLine') ~> source1",
+				"source1 derive(Fullname = lower(FirstName+' '+LastName)) ~> derivedColumn1",
+				"window1 split(RowNum>1,",
+				"     disjoint: false) ~> split1@(DuplicateRows, Unique)",
+				"split1@Unique derive(IngestedDate = currentUTC(),",
+				"          ActiveFlag = 'Active') ~> derivedColumn2",
+				"derivedColumn2 select(mapColumn(",
+				"          Email = {split1@Unique@Email},",
+				"          Fullname = {split1@Unique@Fullname},",
+				"          CustomerID,",
+				"          Email = {split1@Unique@Email},",
+				"          FirstName,",
+				"          LastName,",
+				"          Phone,",
+				"          Region,",
+				"          Fullname = {split1@Unique@Fullname},",
+				"          IngestedDate,",
+				"          ActiveFlag",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> DeletingCountColumn",
+				"derivedColumn1 window(over(Email,",
+				"          Fullname,",
+				"          Phone),",
+				"     asc(CustomerID, true),",
+				"     RowNum = rowNumber()) ~> window1",
+				"DeletingCountColumn sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          LogID as integer,",
+				"          CustomerID as integer,",
+				"          FirstName as string,",
+				"          LastName as string,",
+				"          Email as string,",
+				"          Phone as string,",
+				"          Region as string,",
+				"          MatchKey as string,",
+				"          DuplicateCount as integer,",
+				"          RecordStatus as string,",
+				"          FlagReason as string,",
+				"          DataSource as string,",
+				"          IngestedDate as timestamp,",
+				"          LogDate as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+			]
+		}
+	}
+}
